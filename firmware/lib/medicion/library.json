@@ -1,0 +1,7 @@
+{
+  "name": "medicion",
+  "version": "0.1.0",
+  "description": "Cálculo puro de Irms (sin dependencias de Arduino) para poder probarlo en el PC",
+  "frameworks": "*",
+  "platforms": "*"
+}
