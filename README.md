@@ -45,7 +45,19 @@ docker compose up -d db
 
 ### Backend
 
-_Disponible en la Fase 1._
+Requiere Java 21 y Maven (o Docker). Con la base de datos arriba:
+
+```bash
+cd backend
+export DB_URL=jdbc:postgresql://localhost:5432/monitor_energia DB_USER=monitor DB_PASSWORD=<tu-clave>
+mvn spring-boot:run          # http://localhost:8080/swagger-ui.html
+mvn verify                   # pruebas (usan H2, no necesitan la base)
+```
+
+Sin Java instalado, las pruebas se pueden ejecutar con Docker:
+`docker run --rm -v "$PWD":/app -w /app maven:3.9-eclipse-temurin-21 mvn verify`.
+
+Variables: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SERVER_PORT`, `CORS_ORIGINS`. Referencia de la API en [docs/api.md](docs/api.md).
 
 ### Firmware
 
