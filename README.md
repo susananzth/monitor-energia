@@ -61,7 +61,26 @@ Variables: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SERVER_PORT`, `CORS_ORIGINS`. Re
 
 ### Firmware
 
-_Disponible en la Fase 2._
+Requiere [PlatformIO](https://platformio.org/install/cli) (`pip install platformio`).
+
+```bash
+cd firmware
+cp include/secrets.example.h include/secrets.h   # Wi-Fi, URL del backend, DEVICE_ID y API key
+pio run -e esp32dev -t upload && pio device monitor
+pio test -e native                               # pruebas del cálculo de Irms en el PC
+```
+
+| Entorno | Uso |
+|---|---|
+| `esp32dev` | Placa real |
+| `wokwi` | Simulación (`-DSIMULACION`, red `Wokwi-GUEST`) |
+| `native` | Pruebas unitarias en el PC |
+
+- Parámetros (pin ADC, `R_b`, `N_s`, `K_cal`, `I_MIN`, intervalos, búfer) en `firmware/include/config.h`.
+- Cada segundo mide una ventana de 200 ms (12 ciclos de 60 Hz); cada 5 s envía el RMS de esas ventanas.
+- Las lecturas no confirmadas por el backend quedan en un búfer (1 h) y se reintentan con backoff.
+- El monitor serial imprime `Irms=0.452 A  P_est=99.4 W` (P_est solo informativa; la calcula el backend).
+- La secuencia se reserva en bloques de 12 en la flash: un reinicio deja como máximo ese hueco.
 
 ### Simulación (Wokwi)
 
