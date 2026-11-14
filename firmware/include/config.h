@@ -45,6 +45,14 @@ constexpr uint32_t VENTANA_MS = 200;          // ≥ 10 ciclos de 60 Hz (12 cicl
 constexpr uint32_t MEDICION_CADA_MS = 1000;   // una ventana por segundo
 constexpr uint32_t INTERVALO_ENVIO_S = 5;     // una lectura (RMS de las ventanas) cada 5 s
 
+// ---- Simulación por software (plan B, -DSIM_SOFTWARE) ----
+// El firmware genera las muestras con la misma fórmula del chip ct-sim;
+// un potenciómetro en GPIO35 fija la Irms simulada entre 0 y SIM_IRMS_MAX_A.
+constexpr uint8_t PIN_POT_SIM = 35;
+constexpr float SIM_IRMS_MAX_A = 30.0f;
+constexpr float SIM_VBIAS_V = 1.32f;
+constexpr float SIM_FRECUENCIA_HZ = 60.0f;
+
 // Solo para el monitor serial: el backend recalcula P_est y la energía.
 constexpr float V_REF_V = 220.0f;
 

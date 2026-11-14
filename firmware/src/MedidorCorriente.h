@@ -21,6 +21,9 @@ public:
     uint32_t ultimasSaturadas() const { return saturadas_; }
 
 private:
+#ifdef SIM_SOFTWARE
+    float irmsSimulada() const;
+#endif
     uint8_t pin_;
     medicion::ParametrosTc parametros_;
     uint32_t ventana_ms_;
