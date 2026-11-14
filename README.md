@@ -96,7 +96,16 @@ Luego abre `simulation/diagram.json` con la extensión Wokwi de VS Code. Pasos p
 
 ### Frontend
 
-_Disponible en la Fase 4._
+```bash
+cd frontend
+cp .env.example .env     # VITE_API_URL apunta al backend
+npm install
+npm run dev              # http://localhost:5173
+npm test                 # Vitest
+npm run build
+```
+
+Pantallas: En vivo, Sesiones, Detalle de sesión, Comparar, Validación y Acerca de. Lo medido (Irms) se distingue de lo estimado (potencia y energía) con etiquetas y tooltip del supuesto.
 
 ## Seguridad
 
