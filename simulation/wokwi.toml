@@ -1,0 +1,13 @@
+# Simulación con la extensión Wokwi para VS Code (o wokwi-cli).
+# Antes: compilar el firmware (pio run -e wokwi) y el chip (./chips/build.sh).
+[wokwi]
+version = 1
+firmware = '../firmware/.pio/build/wokwi/firmware.bin'
+elf = '../firmware/.pio/build/wokwi/firmware.elf'
+# Plan B (muestras por software): compilar con `pio run -e wokwi-software` y usar
+# firmware = '../firmware/.pio/build/wokwi-software/firmware.bin'
+# elf = '../firmware/.pio/build/wokwi-software/firmware.elf'
+
+[[chip]]
+name = 'ct-sim'
+binary = 'chips/ct-sim.chip.wasm'

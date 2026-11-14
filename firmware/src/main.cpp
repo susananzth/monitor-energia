@@ -61,6 +61,9 @@ void setup() {
 #ifdef SIMULACION
     Serial.println("Modo SIMULACION (Wokwi)");
 #endif
+#ifdef SIM_SOFTWARE
+    Serial.println("Plan B: muestras generadas por software (potenciómetro en GPIO35)");
+#endif
     cargarSecuencia();
     medidor.iniciar();
     api.iniciar();

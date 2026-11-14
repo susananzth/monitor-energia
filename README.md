@@ -74,6 +74,7 @@ pio test -e native                               # pruebas del cálculo de Irms 
 |---|---|
 | `esp32dev` | Placa real |
 | `wokwi` | Simulación (`-DSIMULACION`, red `Wokwi-GUEST`) |
+| `wokwi-software` | Simulación, plan B (muestras por software) |
 | `native` | Pruebas unitarias en el PC |
 
 - Parámetros (pin ADC, `R_b`, `N_s`, `K_cal`, `I_MIN`, intervalos, búfer) en `firmware/include/config.h`.
@@ -84,7 +85,14 @@ pio test -e native                               # pruebas del cálculo de Irms 
 
 ### Simulación (Wokwi)
 
-_Disponible en la Fase 3._
+Un chip personalizado (`simulation/chips/ct-sim`) simula la salida del SCT-013-000 en GPIO34, con la `I_rms` ajustable en vivo.
+
+```bash
+cd firmware && pio run -e wokwi
+cd ../simulation && ./chips/build.sh     # compila el chip a wasm (Docker)
+```
+
+Luego abre `simulation/diagram.json` con la extensión Wokwi de VS Code. Pasos para wokwi.com, conexión al backend (túnel) y plan B en [docs/simulacion.md](docs/simulacion.md).
 
 ### Frontend
 
