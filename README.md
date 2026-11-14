@@ -94,6 +94,15 @@ cd ../simulation && ./chips/build.sh     # compila el chip a wasm (Docker)
 
 Luego abre `simulation/diagram.json` con la extensión Wokwi de VS Code. Pasos para wokwi.com, conexión al backend (túnel) y plan B en [docs/simulacion.md](docs/simulacion.md).
 
+### Todo junto con Docker
+
+```bash
+docker compose up -d --build   # base de datos, backend (:8080) y frontend (:3000)
+./scripts/seed.sh              # datos de ejemplo (opcional)
+```
+
+Publicación en un servidor: [docs/despliegue.md](docs/despliegue.md).
+
 ### Frontend
 
 ```bash
