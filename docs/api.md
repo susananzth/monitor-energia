@@ -7,6 +7,29 @@ Los campos JSON van en `snake_case`. Los errores usan `application/problem+json`
 > **Medido vs. estimado:** `i_rms` es medido. `p_est` y `energia_*_kwh` son **estimaciones**
 > (`P_est = V_ref · I_rms · FP`, con `V_ref = 220 V` y `FP = 1` por defecto). El backend las recalcula; no confía en el firmware.
 
+## Autenticación
+
+Todo `/api/v1` pide un usuario con sesión iniciada (`Authorization: Bearer <token>`), salvo:
+
+- `POST /auth/login`;
+- las dos rutas del ESP32 (`POST /lecturas` y `GET /dispositivos/{id}/sesion-activa`), que usan su propia `X-Device-Key`.
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | `/auth/login` | `{usuario, password}` → `{token, expira_en, usuario}`. El token dura 12 h (`AUTH_DURACION_TOKEN_HORAS`) |
+| GET | `/auth/yo` | Usuario de la sesión |
+| POST | `/auth/logout` | Invalida el token (`204`) |
+| PATCH | `/auth/password` | `{actual, nueva}`: cambia la propia contraseña y cierra las demás sesiones |
+| GET | `/usuarios` | **Admin.** Lista las cuentas |
+| POST | `/usuarios` | **Admin.** `{usuario, nombre, password, rol}` con `rol` = `ADMIN` o `MIEMBRO` |
+| PATCH | `/usuarios/{id}` | **Admin.** `{nombre?, rol?, activo?, password?}`. Desactivar o cambiar la contraseña cierra sus sesiones |
+
+- Sin token o con token vencido: `401`. Sin el rol necesario: `403`.
+- Registrar dispositivos (`POST /dispositivos`) es solo para **admin**.
+- Contraseñas con BCrypt, mínimo 8 caracteres. Tras 5 intentos fallidos el usuario queda bloqueado 5 minutos (`429`).
+- Un admin no puede desactivarse ni quitarse el rol, y siempre queda al menos un admin activo (`409`).
+- El primer admin se crea al arrancar si la base no tiene usuarios, con `ADMIN_USUARIO` y `ADMIN_PASSWORD`.
+
 ## Endpoints
 
 | Método | Ruta | Uso |
@@ -32,13 +55,16 @@ Los campos JSON van en `snake_case`. Los errores usan `application/problem+json`
 - `timestamp` (opcional, ISO-8601 o epoch en segundos): si el ESP32 no tiene hora NTP, se omite y se usa la del servidor.
 - `% de pérdida = (esperadas − recibidas) / esperadas`, con `esperadas = secuencia_máx − secuencia_mín + 1` dentro de la sesión.
 - En `POST /sesiones/{id}/referencias`, si no se envía `i_prototipo` se usa la última lectura del prototipo anterior a `timestamp`.
-- Los endpoints de gestión (sesiones, validación, exportación) **no tienen autenticación**: están pensados para una red local o de laboratorio.
-  Solo la ingesta y `sesion-activa` exigen `X-Device-Key`.
+- La ingesta y `sesion-activa` exigen `X-Device-Key`; el resto, un token de usuario (ver *Autenticación*).
 
 ## Ejemplo con curl
 
 ```bash
 B=http://localhost:8080/api/v1
+# 0. Iniciar sesión (los pasos 1, 2, 4, 5 y 6 llevan -H "$AUTH")
+TOKEN=$(curl -s -X POST $B/auth/login -H 'Content-Type: application/json' \
+  -d '{"usuario":"admin","password":"<clave>"}' | sed -E 's/.*"token":"([^"]+)".*/\1/')
+AUTH="Authorization: Bearer $TOKEN"
 
 # 1. Registrar el dispositivo (guarda la api_key: no se vuelve a mostrar)
 curl -s -X POST $B/dispositivos -H 'Content-Type: application/json' \

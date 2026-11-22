@@ -114,7 +114,7 @@ npm test                 # Vitest
 npm run build
 ```
 
-Pantallas: En vivo, Sesiones, Detalle de sesión, Comparar, Validación y Acerca de. Lo medido (Irms) se distingue de lo estimado (potencia y energía) con etiquetas y tooltip del supuesto.
+Pantallas: Login, Panel, En vivo, Sesiones, Detalle de sesión, Comparar, Validación y Acerca de. Los administradores gestionan cuentas y dispositivos en **Equipo**. Lo medido (Irms) se distingue de lo estimado (potencia y energía) con etiquetas y tooltip del supuesto.
 
 ## Seguridad
 

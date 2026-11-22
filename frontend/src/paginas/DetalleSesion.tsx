@@ -25,7 +25,7 @@ export function DetalleSesion() {
                 Duración {formatoDuracion(duracionSesion(s.inicio, s.fin))} · V_ref {s.v_ref} V · FP supuesto {s.factor_potencia_supuesto}
               </p>
             </div>
-            <a href={api.urlCsv(id)} download className="rounded bg-sky-600 px-4 py-2 text-white">Exportar CSV</a>
+            <button type="button" onClick={() => api.descargarCsv(id).catch((e: Error) => alert(e.message))} className="rounded bg-sky-600 px-4 py-2 text-white">Exportar CSV</button>
           </div>
           <div className="grid gap-4 sm:grid-cols-4">
             <Tarjeta tipo="medido" titulo="Irms promedio" valor={formatoCorriente(s.i_rms_promedio)} />

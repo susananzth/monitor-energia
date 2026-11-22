@@ -5,7 +5,7 @@
 ```bash
 cp .env.example .env        # cambia POSTGRES_PASSWORD
 docker compose up -d --build
-./scripts/seed.sh           # opcional: datos de ejemplo
+./scripts/seed.sh           # opcional: datos de ejemplo (inicia sesión con ADMIN_USUARIO y ADMIN_PASSWORD de .env)
 ```
 
 - Frontend: http://localhost:3000 · API: http://localhost:8080/api/v1 · Swagger: http://localhost:8080/swagger-ui.html
@@ -20,6 +20,8 @@ El ESP32 (real o simulado) debe llegar al backend por internet. Se usa un solo d
 2. Crea `.env` con valores propios:
    ```env
    POSTGRES_PASSWORD=<clave larga>
+   ADMIN_USUARIO=admin
+   ADMIN_PASSWORD=<clave larga>   # solo crea el primer admin si no hay usuarios
    CORS_ORIGINS=https://monitor.midominio.com
    VITE_API_URL=https://monitor.midominio.com/api/v1
    # opcionales: BACKEND_PORT=8011  FRONTEND_PORT=8010
@@ -37,10 +39,8 @@ El ESP32 (real o simulado) debe llegar al backend por internet. Se usa un solo d
        location /     { proxy_pass http://127.0.0.1:8010; include proxy_params; }
    }
    ```
-5. Registra el dispositivo y guarda su `api_key` (se muestra una sola vez):
-   ```bash
-   curl -s -X POST https://monitor.midominio.com/api/v1/dispositivos -H 'Content-Type: application/json' -d '{"nombre":"esp32-lab"}'
-   ```
+5. Entra a la web con el admin, cambia su contraseña en **Mi cuenta** y crea las cuentas del equipo en **Equipo**.
+   Ahí mismo registra el dispositivo: muestra el `DEVICE_ID` y la `api_key` una sola vez.
 6. En el firmware, pon `API_BASE_URL` (sin `/api/v1`) y la `api_key` en `firmware/include/secrets.h`.
 
 ## Despliegue continuo
@@ -55,7 +55,8 @@ En cada push a `main`, si pasan las pruebas, el job `desplegar` del CI entra por
 
 ## Seguridad
 
-- Los endpoints de gestión **no tienen autenticación** (están pensados para red local). Si el servidor es público, protege el panel y la API de gestión en el proxy (por ejemplo, autenticación básica o una VPN) y deja pasar sin ella solo `POST /api/v1/lecturas` y `GET /api/v1/dispositivos/*/sesion-activa`.
+- La web y la API piden usuario y contraseña. Solo las rutas del ESP32 quedan sin login, protegidas con su `X-Device-Key`.
+- El token se guarda en el navegador (`localStorage`) y dura 12 h; "Salir" lo invalida en el servidor.
 - No subas `.env` ni `secrets.h`.
 
 ## CI

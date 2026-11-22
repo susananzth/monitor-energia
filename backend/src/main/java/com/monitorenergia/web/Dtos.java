@@ -1,6 +1,8 @@
 package com.monitorenergia.web;
 
 import com.monitorenergia.dominio.Lectura;
+import com.monitorenergia.dominio.Rol;
+import com.monitorenergia.dominio.Usuario;
 import com.monitorenergia.dominio.LecturaReferencia;
 import com.monitorenergia.dominio.SesionMedicion;
 import com.monitorenergia.servicio.ReferenciaService;
@@ -11,6 +13,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -96,4 +99,29 @@ public final class Dtos {
                     v.errorMedioAbsoluto(), v.errorMedioPorcentual());
         }
     }
+
+    // ---- Autenticación y usuarios ----
+    public record LoginRequest(@NotBlank @Size(max = 50) String usuario, @NotBlank @Size(max = 200) String password) {}
+
+    public record UsuarioResponse(Long id, String usuario, String nombre, Rol rol, boolean activo, Instant creadoEn) {
+        static UsuarioResponse de(Usuario u) {
+            return new UsuarioResponse(u.getId(), u.getUsuario(), u.getNombre(), u.getRol(), u.isActivo(), u.getCreadoEn());
+        }
+    }
+
+    public record LoginResponse(String token, Instant expiraEn, UsuarioResponse usuario) {}
+
+    public record YoResponse(Long id, String usuario, String nombre, Rol rol) {}
+
+    public record CambioPasswordRequest(@NotBlank String actual, @NotBlank @Size(max = 200) String nueva) {}
+
+    public record UsuarioRequest(
+            @NotBlank @Size(min = 3, max = 50) @Pattern(regexp = "[A-Za-z0-9._-]+",
+                    message = "solo letras, números, punto, guion y guion bajo") String usuario,
+            @NotBlank @Size(max = 100) String nombre,
+            @NotBlank @Size(max = 200) String password,
+            @NotNull Rol rol) {}
+
+    public record UsuarioCambiosRequest(@Size(max = 100) String nombre, Rol rol, Boolean activo,
+                                        @Size(max = 200) String password) {}
 }
