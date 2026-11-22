@@ -1,7 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
 const ENLACES = [
-  ['/', 'En vivo'],
+  ['/', 'Panel'],
+  ['/en-vivo', 'En vivo'],
   ['/sesiones', 'Sesiones'],
   ['/comparar', 'Comparar'],
   ['/validacion', 'Validación'],
@@ -12,7 +13,7 @@ export function Layout() {
   return (
     <div className="min-h-screen">
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-lg font-bold">⚡ Monitor de energía</h1>
           <nav className="flex flex-wrap gap-1">
             {ENLACES.map(([ruta, texto]) => (
@@ -30,7 +31,7 @@ export function Layout() {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-6">
+      <main className="mx-auto max-w-6xl space-y-4 px-4 py-6">
         <Outlet />
       </main>
     </div>
