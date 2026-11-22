@@ -4,6 +4,7 @@ import { api } from '../api/cliente'
 import { EstadoCarga } from '../componentes/EstadoCarga'
 import { GraficaIrms, colorSerie } from '../componentes/GraficaIrms'
 import { Tarjeta } from '../componentes/Tarjeta'
+import { Ayuda } from '../componentes/Ayuda'
 import { aPuntos } from '../utilidades/series'
 import { duracionSesion, formatoCorriente, formatoDuracion, formatoEnergia, formatoPorcentaje } from '../utilidades/formato'
 
@@ -19,22 +20,24 @@ export function DetalleSesion() {
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <Link to="/sesiones" className="text-sm text-sky-700 underline">← Sesiones</Link>
-              <h2 className="text-xl font-bold">Sesión #{s.id}: {s.carga_declarada}</h2>
-              <p className="text-sm text-slate-600">
-                Duración {formatoDuracion(duracionSesion(s.inicio, s.fin))} · V_ref {s.v_ref} V · FP supuesto {s.factor_potencia_supuesto}
+              <Link to="/sesiones" className="enlace text-sm">← Volver a sesiones</Link>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight">{s.carga_declarada}</h2>
+              <p className="text-sm text-slate-500">
+                Sesión #{s.id} · duró {formatoDuracion(duracionSesion(s.inicio, s.fin))} · calculada con {s.v_ref} V
+                <Ayuda termino="vref" />
               </p>
             </div>
-            <button type="button" onClick={() => api.descargarCsv(id).catch((e: Error) => alert(e.message))} className="rounded bg-sky-600 px-4 py-2 text-white">Exportar CSV</button>
+            <button type="button" onClick={() => api.descargarCsv(id).catch((e: Error) => alert(e.message))} className="btn-primario" title="Descarga todas las lecturas para abrirlas en Excel">⬇ Descargar datos (CSV)</button>
           </div>
           <div className="grid gap-4 sm:grid-cols-4">
-            <Tarjeta tipo="medido" titulo="Irms promedio" valor={formatoCorriente(s.i_rms_promedio)} />
-            <Tarjeta tipo="medido" titulo="Irms máximo" valor={formatoCorriente(s.i_rms_max)} />
-            <Tarjeta tipo="estimado" titulo="Energía" valor={formatoEnergia(s.energia_estimada_kwh)} />
-            <Tarjeta tipo="medido" titulo="Pérdida de lecturas" valor={formatoPorcentaje(s.porcentaje_perdida)} detalle={`${s.n_lecturas} lecturas`} />
+            <Tarjeta tipo="medido" tono="corriente" ayuda="irms" titulo="Corriente promedio" valor={formatoCorriente(s.i_rms_promedio)} />
+            <Tarjeta tipo="medido" tono="corriente" titulo="Corriente máxima" valor={formatoCorriente(s.i_rms_max)} />
+            <Tarjeta tipo="estimado" tono="energia" ayuda="energia" titulo="Energía" valor={formatoEnergia(s.energia_estimada_kwh)} />
+            <Tarjeta tipo="medido" ayuda="perdida" titulo="Pérdida de lecturas" valor={formatoPorcentaje(s.porcentaje_perdida)} detalle={`${s.n_lecturas} lecturas`} />
           </div>
-          <section className="rounded-lg border bg-white p-4">
-            <h3 className="mb-2 font-semibold">Irms vs. tiempo</h3>
+          <section className="tarjeta">
+            <h3 className="font-semibold">Corriente durante la medición</h3>
+            <p className="mb-3 text-sm text-slate-500">El eje horizontal es el tiempo desde que empezó la sesión.</p>
             <GraficaIrms series={[{ nombre: 'Irms (medido)', color: colorSerie(0), puntos: aPuntos(lecturas.data ?? []) }]} />
           </section>
         </>

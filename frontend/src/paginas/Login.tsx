@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/Auth'
+import { Logo } from '../componentes/Logo'
 
 export function Login() {
   const { usuario, iniciarSesion, expiro } = useAuth()
@@ -29,17 +30,17 @@ export function Login() {
     }
   }
 
-  const campo = 'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200'
+  const campo = 'campo'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sky-50 to-slate-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-marca-950 via-marca-800 to-marca-950 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <p className="text-4xl" aria-hidden>⚡</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900">Monitor de energía</h1>
-          <p className="text-sm text-slate-500">Inicia sesión con la cuenta de tu equipo</p>
+          <Logo tamano="lg" />
+          <h1 className="mt-3 text-2xl font-bold text-white">Monitor de energía</h1>
+          <p className="text-sm text-slate-400">Inicia sesión con la cuenta de tu equipo</p>
         </div>
-        <form onSubmit={enviar} className="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
+        <form onSubmit={enviar} className="space-y-4 rounded-2xl bg-white p-6 shadow-2xl shadow-marca-950/50">
           {expiro && !error && (
             <p className="rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900">
               Tu sesión terminó. Vuelve a iniciar sesión.
@@ -84,12 +85,12 @@ export function Login() {
           )}
           <button
             disabled={enviando}
-            className="w-full rounded-lg bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-700 disabled:opacity-50"
+            className="btn-primario w-full"
           >
             {enviando ? 'Entrando…' : 'Entrar'}
           </button>
         </form>
-        <p className="mt-4 text-center text-xs text-slate-500">¿No tienes cuenta? Pídesela al administrador del equipo.</p>
+        <p className="mt-4 text-center text-xs text-slate-400">¿No tienes cuenta? Pídesela al administrador del equipo.</p>
       </div>
     </div>
   )

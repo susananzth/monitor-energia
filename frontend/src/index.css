@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+    background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgb(215 228 238 / 0.8), transparent);
+    background-attachment: fixed;
+  }
+  h2 {
+    @apply text-slate-900;
+  }
+}
+
+@layer components {
+  .tarjeta {
+    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm;
+  }
+  .btn-primario {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-marca-600 px-4 py-2 font-medium text-white shadow-sm transition hover:bg-marca-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-marca-300 disabled:opacity-50;
+  }
+  .btn-secundario {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-marca-300 disabled:opacity-50;
+  }
+  .campo {
+    @apply mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-marca-500 focus:outline-none focus:ring-2 focus:ring-marca-200 disabled:bg-slate-100;
+  }
+  .etiqueta {
+    @apply text-sm font-medium text-slate-700;
+  }
+  .enlace {
+    @apply font-medium text-marca-700 underline decoration-marca-300 underline-offset-2 hover:decoration-marca-600;
+  }
+  .tabla {
+    @apply w-full text-left text-sm;
+  }
+  .tabla thead {
+    @apply bg-slate-50 text-xs uppercase tracking-wide text-slate-500;
+  }
+  .tabla th,
+  .tabla td {
+    @apply px-3 py-2.5;
+  }
+  .tabla tbody tr {
+    @apply border-t border-slate-100 hover:bg-marca-50/40;
+  }
+}

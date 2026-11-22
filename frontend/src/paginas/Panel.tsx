@@ -15,6 +15,9 @@ import {
 import { api } from '../api/cliente'
 import type { Lectura, Sesion } from '../api/tipos'
 import { EstadoCarga } from '../componentes/EstadoCarga'
+import { Ayuda, EncabezadoPagina, GuiaPagina } from '../componentes/Ayuda'
+import { TONOS, type Tono } from '../componentes/Tarjeta'
+import type { Termino } from '../utilidades/glosario'
 import {
   duracionSesion,
   formatoCorriente,
@@ -39,13 +42,13 @@ import {
 const REFRESCO_MS = 5000
 const VENTANA_MIN = 5
 const SESIONES_GRAFICA = 10
-const AZUL = '#0284c7'
+const AZUL = '#2a78d6'
 const TINTA_SECUNDARIA = '#64748b'
 const REJILLA = '#e2e8f0'
 
 function Caja({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border bg-white p-4 shadow-sm">
+    <section className="tarjeta">
       <h3 className="font-semibold text-slate-800">{titulo}</h3>
       {ayuda && <p className="mb-3 text-sm text-slate-500">{ayuda}</p>}
       {children}
@@ -53,15 +56,29 @@ function Caja({ titulo, ayuda, children }: { titulo: string; ayuda?: string; chi
   )
 }
 
-function Dato({ titulo, valor, explicacion, estimado }: { titulo: string; valor: string; explicacion: string; estimado?: boolean }) {
+function Dato({ titulo, valor, explicacion, estimado, tono = 'neutro', ayuda }: {
+  titulo: string
+  valor: string
+  explicacion: string
+  estimado?: boolean
+  tono?: Tono
+  ayuda?: Termino
+}) {
+  const t = TONOS[tono]
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm">
-      <p className="text-sm text-slate-500">{titulo}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-900">{valor}</p>
+    <div className="tarjeta">
+      <div className="flex items-center gap-2">
+        <span aria-hidden className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${t.burbuja}`}>{t.icono}</span>
+        <p className="text-sm text-slate-500">
+          {titulo}
+          {ayuda && <Ayuda termino={ayuda} />}
+        </p>
+      </div>
+      <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{valor}</p>
       <p className="mt-1 text-xs text-slate-500">
         {explicacion}
         {estimado && (
-          <span title={SUPUESTO} className="ml-1 cursor-help rounded bg-amber-100 px-1.5 text-amber-900">
+          <span title={SUPUESTO} className="ml-1 cursor-help rounded-full bg-amber-100 px-1.5 text-amber-900">
             estimado
           </span>
         )}
@@ -119,7 +136,7 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-gradient-to-br from-sky-50 to-white p-5 shadow-sm">
+      <div className="tarjeta border-marca-100 bg-gradient-to-br from-marca-50 via-white to-acento-50">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm text-slate-500">
@@ -127,7 +144,13 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
             </p>
             {ultima ? (
               <>
-                <p className="mt-2 text-5xl font-bold text-slate-900">{formatoPotencia(ultima.p_est)}</p>
+                <p className="mt-2 text-5xl font-bold tracking-tight text-slate-900">
+                  {formatoPotencia(ultima.p_est)}
+                  <span className="ml-2 align-middle text-sm font-medium text-slate-500">
+                    consumo estimado
+                    <Ayuda termino="potencia" />
+                  </span>
+                </p>
                 <p className="mt-1 text-slate-700">
                   Es parecido a lo que consume <strong>{equivalencia(ultima.p_est)}</strong>.
                 </p>
@@ -159,17 +182,22 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
       <div className="grid gap-4 sm:grid-cols-3">
         <Dato
           titulo="Corriente medida"
+          tono="corriente"
+          ayuda="irms"
           valor={ultima ? formatoCorriente(ultima.i_rms) : '—'}
           explicacion="Lo que mide el sensor en el cable (amperios)."
         />
         <Dato
           titulo="Energía de esta sesión"
+          tono="energia"
+          ayuda="energia"
           valor={ultima ? formatoEnergia(ultima.energia_acumulada_kwh) : '—'}
           explicacion="Lo consumido desde que empezó la sesión."
           estimado
         />
         <Dato
           titulo="Tiempo midiendo"
+          tono="tiempo"
           valor={formatoDuracion(duracionSesion(activa.inicio, null, ahora))}
           explicacion={`Desde ${formatoFecha(activa.inicio)}.`}
         />
@@ -241,10 +269,10 @@ function Historico({ sesiones, ahora }: { sesiones: Sesion[]; ahora: number }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Dato titulo="Mediciones realizadas" valor={String(r.sesiones)} explicacion={`${r.lecturas} lecturas en total.`} />
-        <Dato titulo="Tiempo total medido" valor={formatoDuracion(r.segundosMedidos)} explicacion="Suma de todas las sesiones." />
-        <Dato titulo="Energía total" valor={formatoEnergia(r.energiaKwh)} explicacion="Todo lo consumido en las mediciones." estimado />
-        <Dato titulo="Corriente más alta" valor={formatoCorriente(r.iMax)} explicacion="El pico registrado por el sensor." />
+        <Dato titulo="Mediciones realizadas" tono="neutro" ayuda="sesion" valor={String(r.sesiones)} explicacion={`${r.lecturas} lecturas en total.`} />
+        <Dato titulo="Tiempo total medido" tono="tiempo" valor={formatoDuracion(r.segundosMedidos)} explicacion="Suma de todas las sesiones." />
+        <Dato titulo="Energía total" tono="energia" ayuda="energia" valor={formatoEnergia(r.energiaKwh)} explicacion="Todo lo consumido en las mediciones." estimado />
+        <Dato titulo="Corriente más alta" tono="corriente" ayuda="irms" valor={formatoCorriente(r.iMax)} explicacion="El pico registrado por el sensor." />
       </div>
 
       <Caja
@@ -331,15 +359,25 @@ export function Panel() {
   return (
     <EstadoCarga cargando={sesiones.isLoading} error={sesiones.error}>
       <div className="space-y-8">
+        <EncabezadoPagina titulo="Panel" descripcion="Lo que se está midiendo ahora y el resumen de todas tus mediciones." />
+        <GuiaPagina
+          id="panel"
+          pasos={[
+            <>Para medir un aparato, ve a <Link className="enlace" to="/sesiones">Sesiones</Link> y pulsa <strong>Nueva sesión</strong>.</>,
+            'Enciende el aparato: los datos aparecen aquí solos, cada 5 segundos.',
+            'El color te dice si el consumo es bajo (verde), medio (ámbar) o alto (rojo).',
+          ]}
+        />
         <div className="space-y-3">
-          <h2 className="text-xl font-bold text-slate-900">Ahora mismo</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Ahora mismo</h2>
           {activa ? (
             <Ahora activa={activa} ahora={ahora} />
           ) : (
-            <div className="rounded-xl border bg-white p-6 text-center shadow-sm">
-              <p className="mb-1 text-lg">No se está midiendo nada en este momento.</p>
+            <div className="tarjeta text-center">
+              <p className="text-4xl" aria-hidden>🔌</p>
+              <p className="mb-1 mt-2 text-lg font-medium">No se está midiendo nada en este momento.</p>
               <p className="mb-4 text-sm text-slate-500">Inicia una sesión e indica qué aparato vas a medir.</p>
-              <Link to="/sesiones" className="rounded bg-sky-600 px-4 py-2 text-white hover:bg-sky-700">
+              <Link to="/sesiones" className="btn-primario">
                 Iniciar una medición
               </Link>
             </div>
@@ -347,11 +385,11 @@ export function Panel() {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-xl font-bold text-slate-900">Histórico</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Histórico</h2>
           <Historico sesiones={lista} ahora={ahora} />
         </div>
 
-        <details className="rounded-xl border bg-white p-4 text-sm text-slate-600 shadow-sm">
+        <details className="tarjeta text-sm text-slate-600">
           <summary className="cursor-pointer font-medium text-slate-800">¿Cómo leer este panel?</summary>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li>
