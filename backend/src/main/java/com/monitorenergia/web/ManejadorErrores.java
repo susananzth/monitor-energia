@@ -1,6 +1,8 @@
 package com.monitorenergia.web;
 
 import com.monitorenergia.servicio.ConflictoException;
+import com.monitorenergia.servicio.DatosInvalidosException;
+import com.monitorenergia.servicio.DemasiadosIntentosException;
 import com.monitorenergia.servicio.NoAutorizadoException;
 import com.monitorenergia.servicio.NoEncontradoException;
 import org.springframework.http.HttpStatus;
@@ -24,5 +26,15 @@ public class ManejadorErrores {
     @ExceptionHandler(NoAutorizadoException.class)
     public ProblemDetail noAutorizado(NoAutorizadoException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(DatosInvalidosException.class)
+    public ProblemDetail datosInvalidos(DatosInvalidosException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(DemasiadosIntentosException.class)
+    public ProblemDetail demasiadosIntentos(DemasiadosIntentosException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
     }
 }

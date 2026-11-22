@@ -55,3 +55,44 @@ export interface Validacion {
   error_medio_absoluto_a: number
   error_medio_porcentual: number
 }
+
+export type Rol = 'ADMIN' | 'MIEMBRO'
+
+export interface UsuarioSesion {
+  id: number
+  usuario: string
+  nombre: string
+  rol: Rol
+}
+
+export interface Usuario extends UsuarioSesion {
+  activo: boolean
+  creado_en: string
+}
+
+export interface LoginRespuesta {
+  token: string
+  expira_en: string
+  usuario: Usuario
+}
+
+export interface NuevoUsuario {
+  usuario: string
+  nombre: string
+  password: string
+  rol: Rol
+}
+
+export interface CambiosUsuario {
+  nombre?: string
+  rol?: Rol
+  activo?: boolean
+  password?: string
+}
+
+export interface DispositivoCreado {
+  id: number
+  nombre: string
+  creado_en: string
+  api_key: string
+}

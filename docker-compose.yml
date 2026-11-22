@@ -29,6 +29,9 @@ services:
       DB_USER: ${POSTGRES_USER:-monitor}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      # Primer administrador: solo se crea si la base no tiene usuarios.
+      ADMIN_USUARIO: ${ADMIN_USUARIO:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
 

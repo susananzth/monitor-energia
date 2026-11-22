@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 # Carga datos de ejemplo: un dispositivo y dos sesiones cerradas (foco y hervidor).
 # Uso: ./scripts/seed.sh [URL_API]   (por defecto http://localhost:8080/api/v1)
+# Inicia sesión con ADMIN_USUARIO y ADMIN_PASSWORD (del entorno o de .env).
 set -euo pipefail
 B="${1:-http://localhost:8080/api/v1}"
-post() { curl -fsS -X POST "$B$1" -H 'Content-Type: application/json' "${@:2}"; }
+cd "$(dirname "$0")/.."
+if [[ -z "${ADMIN_USUARIO:-}" || -z "${ADMIN_PASSWORD:-}" ]] && [[ -f .env ]]; then
+  ADMIN_USUARIO="${ADMIN_USUARIO:-$(sed -n 's/^ADMIN_USUARIO=//p' .env)}"
+  ADMIN_PASSWORD="${ADMIN_PASSWORD:-$(sed -n 's/^ADMIN_PASSWORD=//p' .env)}"
+fi
+: "${ADMIN_USUARIO:?Define ADMIN_USUARIO}" "${ADMIN_PASSWORD:?Define ADMIN_PASSWORD}"
+LOGIN=$(python3 -c 'import json,sys;print(json.dumps({"usuario":sys.argv[1],"password":sys.argv[2]}))' "$ADMIN_USUARIO" "$ADMIN_PASSWORD")
+TOKEN=$(curl -fsS -X POST "$B/auth/login" -H 'Content-Type: application/json' -d "$LOGIN" | sed -E 's/.*"token":"([^"]+)".*/\1/')
+AUTH="Authorization: Bearer $TOKEN"
+post() { curl -fsS -X POST "$B$1" -H 'Content-Type: application/json' -H "$AUTH" "${@:2}"; }
 
 KEY_JSON=$(post /dispositivos -d '{"nombre":"esp32-demo"}')
 DISP=$(sed -E 's/.*"id":([0-9]+).*/\1/' <<<"$KEY_JSON")
@@ -22,7 +32,7 @@ sesion() {
   done
   curl -fsS -X POST "$B/lecturas" -H "X-Device-Key: $KEY" -H 'Content-Type: application/json' \
     -d "{\"lecturas\":[${lote%,}]}" >/dev/null
-  curl -fsS -X PATCH "$B/sesiones/$id/finalizar" >/dev/null
+  curl -fsS -X PATCH "$B/sesiones/$id/finalizar" -H "$AUTH" >/dev/null
   post "/sesiones/$id/referencias" -d "{\"i_pinza\":$(awk -v b="$base" 'BEGIN{printf "%.3f", b*1.02}')}" >/dev/null
   echo "Sesión $id ($nombre): $n lecturas"
 }
