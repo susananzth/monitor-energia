@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { Layout } from './componentes/Layout'
+import { Panel } from './paginas/Panel'
 import { EnVivo } from './paginas/EnVivo'
 import { Sesiones } from './paginas/Sesiones'
 import { DetalleSesion } from './paginas/DetalleSesion'
@@ -11,7 +12,8 @@ export function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<EnVivo />} />
+        <Route index element={<Panel />} />
+        <Route path="en-vivo" element={<EnVivo />} />
         <Route path="sesiones" element={<Sesiones />} />
         <Route path="sesiones/:id" element={<DetalleSesion />} />
         <Route path="comparar" element={<Comparar />} />
