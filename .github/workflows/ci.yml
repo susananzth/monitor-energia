@@ -36,3 +36,22 @@ jobs:
       - run: pip install platformio
       - run: pio test -e native
         working-directory: firmware
+
+  desplegar:
+    # Solo en push a main y si pasaron todas las pruebas.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend, frontend, firmware]
+    runs-on: ubuntu-latest
+    concurrency: { group: despliegue, cancel-in-progress: false }
+    steps:
+      - name: Desplegar en el servidor
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # La llave del servidor solo permite ejecutar scripts/deploy.sh.
+          ssh -i ~/.ssh/deploy "$HOST"

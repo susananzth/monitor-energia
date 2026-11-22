@@ -1,0 +1,21 @@
+# Producción: se combina con docker-compose.yml
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Nada queda expuesto fuera del servidor: el nginx del host publica la web y /api con HTTPS.
+services:
+  db:
+    ports: !reset []
+
+  backend:
+    ports: !override
+      - "127.0.0.1:${BACKEND_PORT:-8011}:8080"
+    environment:
+      CORS_ORIGINS: ${CORS_ORIGINS:?Define CORS_ORIGINS en .env (URL pública de la web)}
+      JAVA_TOOL_OPTIONS: "-Xmx256m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC"
+    mem_limit: 512m
+
+  frontend:
+    build:
+      args:
+        VITE_API_URL: ${VITE_API_URL:?Define VITE_API_URL en .env (URL pública + /api/v1)}
+    ports: !override
+      - "127.0.0.1:${FRONTEND_PORT:-8010}:80"
