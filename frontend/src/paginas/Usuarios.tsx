@@ -4,9 +4,9 @@ import { api } from '../api/cliente'
 import type { DispositivoCreado, Rol, Usuario } from '../api/tipos'
 import { EstadoCarga } from '../componentes/EstadoCarga'
 import { useAuth } from '../auth/Auth'
+import { Ayuda, EncabezadoPagina } from '../componentes/Ayuda'
 import { formatoFecha } from '../utilidades/formato'
 
-const campo = 'mt-1 w-full rounded border px-2 py-1'
 const TEXTO_ROL: Record<Rol, string> = { ADMIN: 'Administrador', MIEMBRO: 'Miembro' }
 
 function FormularioUsuario() {
@@ -30,16 +30,16 @@ function FormularioUsuario() {
     crear.mutate()
   }
   return (
-    <form onSubmit={enviar} className="grid gap-3 rounded-xl border bg-white p-4 shadow-sm sm:grid-cols-4">
+    <form onSubmit={enviar} className="grid gap-3 tarjeta sm:grid-cols-4">
       <h3 className="font-semibold sm:col-span-4">Agregar una persona al equipo</h3>
-      <label className="text-sm">
+      <label className="etiqueta">
         Nombre
-        <input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} required maxLength={100} placeholder="Ana Pérez" />
+        <input className="campo" value={nombre} onChange={(e) => setNombre(e.target.value)} required maxLength={100} placeholder="Ana Pérez" />
       </label>
-      <label className="text-sm">
+      <label className="etiqueta">
         Usuario
         <input
-          className={campo}
+          className="campo"
           value={usuario}
           onChange={(e) => setUsuario(e.target.value)}
           required
@@ -51,19 +51,20 @@ function FormularioUsuario() {
           placeholder="ana.perez"
         />
       </label>
-      <label className="text-sm">
+      <label className="etiqueta">
         Contraseña inicial
-        <input className={campo} type="text" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete="new-password" placeholder="mínimo 8 caracteres" />
+        <input className="campo" type="text" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete="new-password" placeholder="mínimo 8 caracteres" />
       </label>
-      <label className="text-sm">
+      <label className="etiqueta">
         Rol
-        <select className={campo} value={rol} onChange={(e) => setRol(e.target.value as Rol)}>
+        <Ayuda texto="Administrador: gestiona cuentas y medidores. Miembro: hace mediciones y consulta datos." />
+        <select className="campo" value={rol} onChange={(e) => setRol(e.target.value as Rol)}>
           <option value="MIEMBRO">Miembro</option>
           <option value="ADMIN">Administrador</option>
         </select>
       </label>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-4">
-        <button disabled={crear.isPending} className="rounded bg-sky-600 px-4 py-2 text-white disabled:opacity-50">
+        <button disabled={crear.isPending} className="btn-primario">
           Crear cuenta
         </button>
         {crear.isSuccess && <span className="text-sm text-green-700">Cuenta creada. Comparte el usuario y la contraseña inicial con esa persona.</span>}
@@ -101,13 +102,13 @@ function FilaUsuario({ u, soyYo }: { u: Usuario; soyYo: boolean }) {
           {!soyYo && (
             <>
               <button
-                className="rounded border px-2 py-1 hover:bg-slate-50"
+                className="btn-secundario"
                 onClick={() => actualizar.mutate({ rol: u.rol === 'ADMIN' ? 'MIEMBRO' : 'ADMIN' })}
               >
                 {u.rol === 'ADMIN' ? 'Hacer miembro' : 'Hacer admin'}
               </button>
               <button
-                className="rounded border px-2 py-1 hover:bg-slate-50"
+                className="btn-secundario"
                 onClick={() => {
                   if (!u.activo || confirm(`¿Desactivar la cuenta de ${u.nombre}? Se cerrarán sus sesiones abiertas.`))
                     actualizar.mutate({ activo: !u.activo })
@@ -117,7 +118,7 @@ function FilaUsuario({ u, soyYo }: { u: Usuario; soyYo: boolean }) {
               </button>
             </>
           )}
-          <button className="rounded border px-2 py-1 hover:bg-slate-50" onClick={() => setNuevaClave(nuevaClave === null ? '' : null)}>
+          <button className="btn-secundario" onClick={() => setNuevaClave(nuevaClave === null ? '' : null)}>
             Restablecer contraseña
           </button>
         </div>
@@ -130,8 +131,8 @@ function FilaUsuario({ u, soyYo }: { u: Usuario; soyYo: boolean }) {
             actualizar.mutate({ password: nuevaClave })
           }}
         >
-          <input className="rounded border px-2 py-1 text-sm" value={nuevaClave} onChange={(e) => setNuevaClave(e.target.value)} minLength={8} required placeholder="nueva contraseña (mín. 8)" autoComplete="new-password" />
-          <button className="rounded bg-sky-600 px-3 py-1 text-sm text-white">Guardar</button>
+          <input className="campo mt-0 w-auto py-1 text-sm" value={nuevaClave} onChange={(e) => setNuevaClave(e.target.value)} minLength={8} required placeholder="nueva contraseña (mín. 8)" autoComplete="new-password" />
+          <button className="btn-primario px-3 py-1 text-sm">Guardar</button>
           <span className="text-xs text-slate-500">Se cerrarán sus sesiones abiertas.</span>
         </form>
       )}
@@ -151,7 +152,7 @@ function RegistrarDispositivo() {
     },
   })
   return (
-    <section className="space-y-3 rounded-xl border bg-white p-4 shadow-sm">
+    <section className="space-y-3 tarjeta">
       <h3 className="font-semibold">Registrar un dispositivo (ESP32)</h3>
       <p className="text-sm text-slate-500">
         Genera el <strong>ID</strong> y la <strong>API key</strong> que van en <code>secrets.h</code> del firmware. La clave se muestra una sola vez.
@@ -163,8 +164,8 @@ function RegistrarDispositivo() {
           registrar.mutate()
         }}
       >
-        <input className="flex-1 rounded border px-2 py-1" value={nombre} onChange={(e) => setNombre(e.target.value)} required maxLength={100} placeholder="esp32-laboratorio" />
-        <button disabled={registrar.isPending} className="rounded bg-sky-600 px-4 py-2 text-white disabled:opacity-50">
+        <input className="campo mt-0 flex-1" value={nombre} onChange={(e) => setNombre(e.target.value)} required maxLength={100} placeholder="esp32-laboratorio" />
+        <button disabled={registrar.isPending} className="btn-primario">
           Registrar
         </button>
       </form>
@@ -190,9 +191,9 @@ export function Usuarios() {
   const lista = useQuery({ queryKey: ['usuarios'], queryFn: api.usuarios })
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Equipo y dispositivos</h2>
+      <EncabezadoPagina titulo="Equipo" descripcion="Crea las cuentas de tu equipo y registra los medidores (ESP32)." />
       <FormularioUsuario />
-      <section className="rounded-xl border bg-white p-4 shadow-sm">
+      <section className="tarjeta">
         <h3 className="font-semibold">Cuentas</h3>
         <p className="text-sm text-slate-500">Los administradores gestionan cuentas y dispositivos; los miembros miden y consultan.</p>
         <EstadoCarga cargando={lista.isLoading} error={lista.error}>

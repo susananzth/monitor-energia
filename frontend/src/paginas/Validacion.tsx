@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/cliente'
 import { EstadoCarga } from '../componentes/EstadoCarga'
+import { Ayuda, EncabezadoPagina, GuiaPagina } from '../componentes/Ayuda'
 import { formatoCorriente, formatoHora, formatoPorcentaje } from '../utilidades/formato'
 
 const OBJETIVO_PCT = 5
@@ -32,12 +33,24 @@ export function Validacion() {
 
   return (
     <>
-      <h2 className="text-xl font-bold">Validación con pinza amperimétrica</h2>
+      <EncabezadoPagina
+        titulo="Validación"
+        descripcion={<>Comprueba que el sistema mide bien comparándolo con una pinza amperimétrica<Ayuda termino="pinza" />.</>}
+      />
+      <GuiaPagina
+        id="validacion"
+        pasos={[
+          'Elige la sesión que se está midiendo ahora.',
+          'Con el aparato encendido, mide el mismo cable con la pinza amperimétrica.',
+          <>Escribe el número que muestra la pinza y pulsa <strong>Registrar</strong>. Repite 3 a 5 veces.</>,
+          'Si el error es de 5 % o menos, el sistema mide bien.',
+        ]}
+      />
       <EstadoCarga cargando={lista.isLoading} error={lista.error}>
-        <div className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-3">
-          <label className="text-sm">
+        <div className="tarjeta grid gap-4 sm:grid-cols-3">
+          <label className="etiqueta">
             Sesión
-            <select className="mt-1 w-full rounded border px-2 py-1" value={sesionId ?? ''} onChange={(e) => setSesionId(e.target.value ? Number(e.target.value) : null)}>
+            <select className="campo" value={sesionId ?? ''} onChange={(e) => setSesionId(e.target.value ? Number(e.target.value) : null)}>
               <option value="">Elige una sesión…</option>
               {lista.data?.content.map((s) => (
                 <option key={s.id} value={s.id}>#{s.id} · {s.carga_declarada}</option>
@@ -45,17 +58,17 @@ export function Validacion() {
             </select>
           </label>
           <form onSubmit={enviar} className="flex items-end gap-2 sm:col-span-2">
-            <label className="flex-1 text-sm">
-              Lectura de la pinza (A)
-              <input className="mt-1 w-full rounded border px-2 py-1" type="number" min={0} step="any" required value={pinza} onChange={(e) => setPinza(e.target.value)} disabled={sesionId === null} />
+            <label className="etiqueta flex-1">
+              Valor que muestra la pinza (A)
+              <input className="campo" type="number" min={0} step="any" required value={pinza} onChange={(e) => setPinza(e.target.value)} disabled={sesionId === null} />
             </label>
-            <button disabled={sesionId === null || agregar.isPending} className="rounded bg-sky-600 px-4 py-2 text-white disabled:opacity-50">
+            <button disabled={sesionId === null || agregar.isPending} className="btn-primario">
               Registrar
             </button>
           </form>
           {agregar.error && <p role="alert" className="text-sm text-red-700 sm:col-span-3">{agregar.error.message}</p>}
           <p className="text-xs text-slate-500 sm:col-span-3">
-            Se compara con la última lectura del prototipo anterior al momento del registro.
+            Se compara con la última lectura que envió el sistema antes de que pulsaras Registrar.
           </p>
         </div>
       </EstadoCarga>
@@ -65,33 +78,39 @@ export function Validacion() {
           {v && (
             <>
               <div
-                className={`rounded-lg border p-4 ${cumple ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}
+                className={`rounded-2xl border p-5 ${v.filas.length === 0 ? 'border-slate-200 bg-white' : cumple ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50'}`}
               >
-                <p className="font-semibold">Error medio porcentual: {formatoPorcentaje(v.error_medio_porcentual)}</p>
+                <p className="text-lg font-semibold">
+                  {v.filas.length === 0 ? '📏 Aún no hay comparaciones' : cumple ? '✅ El sistema mide bien' : '⚠️ El sistema se desvía más de lo esperado'}
+                </p>
+                <p className="mt-1 font-medium">
+                  Error medio: {formatoPorcentaje(v.error_medio_porcentual)}
+                  <Ayuda termino="error" />
+                </p>
                 <p className="text-sm">
                   Error medio absoluto: {formatoCorriente(v.error_medio_absoluto_a)} ·{' '}
                   {v.filas.length === 0 ? 'sin referencias aún' : cumple ? `cumple el objetivo (≤ ${OBJETIVO_PCT} %)` : `supera el objetivo (≤ ${OBJETIVO_PCT} %)`}
                 </p>
               </div>
-              <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-100">
+              <div className="tarjeta overflow-x-auto p-0">
+                <table className="tabla">
+                  <thead>
                     <tr>
-                      <th className="p-2">Hora</th>
-                      <th className="p-2">Prototipo</th>
-                      <th className="p-2">Pinza</th>
-                      <th className="p-2">Diferencia</th>
-                      <th className="p-2">Error %</th>
+                      <th>Hora</th>
+                      <th>Este sistema</th>
+                      <th>Pinza</th>
+                      <th>Diferencia</th>
+                      <th>Error %</th>
                     </tr>
                   </thead>
                   <tbody>
                     {v.filas.map((f) => (
-                      <tr key={f.id} className="border-t">
-                        <td className="p-2">{formatoHora(f.timestamp)}</td>
-                        <td className="p-2">{formatoCorriente(f.i_prototipo)}</td>
-                        <td className="p-2">{formatoCorriente(f.i_pinza)}</td>
-                        <td className="p-2">{formatoCorriente(f.diferencia_abs)}</td>
-                        <td className="p-2">{formatoPorcentaje(f.diferencia_pct)}</td>
+                      <tr key={f.id}>
+                        <td>{formatoHora(f.timestamp)}</td>
+                        <td>{formatoCorriente(f.i_prototipo)}</td>
+                        <td>{formatoCorriente(f.i_pinza)}</td>
+                        <td>{formatoCorriente(f.diferencia_abs)}</td>
+                        <td>{formatoPorcentaje(f.diferencia_pct)}</td>
                       </tr>
                     ))}
                   </tbody>

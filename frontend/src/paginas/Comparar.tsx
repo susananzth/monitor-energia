@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { api } from '../api/cliente'
 import { EstadoCarga } from '../componentes/EstadoCarga'
+import { Ayuda, EncabezadoPagina } from '../componentes/Ayuda'
 import { GraficaIrms, colorSerie } from '../componentes/GraficaIrms'
 import { aPuntos } from '../utilidades/series'
 import { formatoCorriente, formatoEnergia, SUPUESTO } from '../utilidades/formato'
@@ -19,13 +20,17 @@ export function Comparar() {
 
   return (
     <>
-      <h2 className="text-xl font-bold">Comparar sesiones</h2>
+      <EncabezadoPagina
+        titulo="Comparar"
+        descripcion="Pon hasta 3 mediciones en la misma gráfica para ver cuál consume más."
+      />
       <EstadoCarga cargando={lista.isLoading} error={lista.error}>
-        <fieldset className="rounded-lg border bg-white p-4">
-          <legend className="px-1 text-sm text-slate-600">Elige de 2 a {MAX} sesiones</legend>
+        <fieldset className="tarjeta">
+          <legend className="sr-only">Sesiones a comparar</legend>
+          <p className="mb-3 text-sm font-medium text-slate-700">Marca de 2 a {MAX} sesiones</p>
           <div className="grid gap-1 sm:grid-cols-2">
             {lista.data?.content.map((s) => (
-              <label key={s.id} className="flex items-center gap-2 text-sm">
+              <label key={s.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-marca-50">
                 <input
                   type="checkbox"
                   checked={elegidas.includes(s.id)}
@@ -41,7 +46,8 @@ export function Comparar() {
 
       {elegidas.length >= 2 && (
         <>
-          <section className="rounded-lg border bg-white p-4">
+          <section className="tarjeta">
+            <p className="mb-3 text-sm text-slate-500">Cada color es una sesión. La línea más alta es la que consume más corriente.</p>
             <GraficaIrms
               series={elegidas.map((id, n) => ({
                 nombre: `#${id} ${resumenes[n].data?.carga_declarada ?? ''}`,
@@ -50,22 +56,25 @@ export function Comparar() {
               }))}
             />
           </section>
-          <div className="overflow-x-auto rounded-lg border bg-white">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-100">
+          <div className="tarjeta overflow-x-auto p-0">
+            <table className="tabla">
+              <thead>
                 <tr>
-                  <th className="p-2">Sesión</th>
-                  <th className="p-2">Irms promedio (medido)</th>
-                  <th className="p-2" title={SUPUESTO}>Energía (estimada)</th>
+                  <th>Sesión</th>
+                  <th>Corriente promedio <Ayuda termino="irms" /></th>
+                  <th title={SUPUESTO}>Energía <Ayuda termino="estimado" /></th>
                 </tr>
               </thead>
               <tbody>
                 {resumenes.map((r, n) =>
                   r.data ? (
-                    <tr key={r.data.id} className="border-t">
-                      <td className="p-2" style={{ color: colorSerie(n) }}>#{r.data.id} {r.data.carga_declarada}</td>
-                      <td className="p-2">{formatoCorriente(r.data.i_rms_promedio)}</td>
-                      <td className="p-2">{formatoEnergia(r.data.energia_estimada_kwh)}</td>
+                    <tr key={r.data.id}>
+                      <td>
+                        <span aria-hidden className="mr-2 inline-block h-2.5 w-2.5 rounded-full" style={{ background: colorSerie(n) }} />
+                        #{r.data.id} {r.data.carga_declarada}
+                      </td>
+                      <td>{formatoCorriente(r.data.i_rms_promedio)}</td>
+                      <td>{formatoEnergia(r.data.energia_estimada_kwh)}</td>
                     </tr>
                   ) : null,
                 )}

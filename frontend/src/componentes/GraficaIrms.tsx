@@ -6,7 +6,8 @@ export interface Serie {
   puntos: { t: number; i: number }[]
 }
 
-const COLORES = ['#0284c7', '#dc2626', '#16a34a']
+// Paleta categórica validada para daltonismo: azul, naranja, aguamarina (en ese orden).
+const COLORES = ['#2a78d6', '#eb6834', '#1baf7a']
 export const colorSerie = (n: number) => COLORES[n % COLORES.length]
 
 /** Gráfica de Irms (medido) contra el tiempo transcurrido en segundos. */
@@ -17,7 +18,7 @@ export function GraficaIrms({ series, alto = 288 }: { series: Serie[]; alto?: nu
     <div style={{ height: alto }} aria-label="Gráfica de corriente Irms">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid stroke="#e2e8f0" vertical={false} />
           <XAxis
             type="number"
             dataKey="t"

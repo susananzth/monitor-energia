@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './componentes/Layout'
 import { RutaProtegida, SoloAdmin } from './auth/Auth'
 import { Login } from './paginas/Login'
@@ -8,7 +8,7 @@ import { Sesiones } from './paginas/Sesiones'
 import { DetalleSesion } from './paginas/DetalleSesion'
 import { Comparar } from './paginas/Comparar'
 import { Validacion } from './paginas/Validacion'
-import { Acerca } from './paginas/Acerca'
+import { PaginaAyuda } from './paginas/PaginaAyuda'
 import { Usuarios } from './paginas/Usuarios'
 import { MiCuenta } from './paginas/MiCuenta'
 
@@ -24,7 +24,8 @@ export function App() {
           <Route path="sesiones/:id" element={<DetalleSesion />} />
           <Route path="comparar" element={<Comparar />} />
           <Route path="validacion" element={<Validacion />} />
-          <Route path="acerca" element={<Acerca />} />
+          <Route path="ayuda" element={<PaginaAyuda />} />
+          <Route path="acerca" element={<Navigate to="/ayuda" replace />} />
           <Route path="cuenta" element={<MiCuenta />} />
           <Route
             path="usuarios"

@@ -26,31 +26,30 @@ export function MiCuenta() {
     }
     cambiar.mutate()
   }
-  const campo = 'mt-1 w-full rounded border px-2 py-1'
   return (
     <div className="max-w-md space-y-4">
-      <h2 className="text-xl font-bold">Mi cuenta</h2>
-      <div className="rounded-xl border bg-white p-4 shadow-sm">
+      <h2 className="text-2xl font-bold tracking-tight">Mi cuenta</h2>
+      <div className="tarjeta">
         <p className="font-medium">{usuario?.nombre}</p>
         <p className="text-sm text-slate-500">
           @{usuario?.usuario} · {usuario?.rol === 'ADMIN' ? 'Administrador' : 'Miembro'}
         </p>
       </div>
-      <form onSubmit={enviar} className="space-y-3 rounded-xl border bg-white p-4 shadow-sm">
+      <form onSubmit={enviar} className="space-y-3 tarjeta">
         <h3 className="font-semibold">Cambiar contraseña</h3>
-        <label className="block text-sm">
+        <label className="etiqueta block">
           Contraseña actual
-          <input className={campo} type="password" value={actual} onChange={(e) => setActual(e.target.value)} required autoComplete="current-password" />
+          <input className="campo" type="password" value={actual} onChange={(e) => setActual(e.target.value)} required autoComplete="current-password" />
         </label>
-        <label className="block text-sm">
+        <label className="etiqueta block">
           Nueva contraseña
-          <input className={campo} type="password" value={nueva} onChange={(e) => setNueva(e.target.value)} required minLength={8} autoComplete="new-password" />
+          <input className="campo" type="password" value={nueva} onChange={(e) => setNueva(e.target.value)} required minLength={8} autoComplete="new-password" />
         </label>
-        <label className="block text-sm">
+        <label className="etiqueta block">
           Repite la nueva contraseña
-          <input className={campo} type="password" value={repetir} onChange={(e) => setRepetir(e.target.value)} required minLength={8} autoComplete="new-password" />
+          <input className="campo" type="password" value={repetir} onChange={(e) => setRepetir(e.target.value)} required minLength={8} autoComplete="new-password" />
         </label>
-        <button disabled={cambiar.isPending} className="rounded bg-sky-600 px-4 py-2 text-white disabled:opacity-50">
+        <button disabled={cambiar.isPending} className="btn-primario">
           Guardar
         </button>
         {aviso && <p role="alert" className="text-sm text-red-700">{aviso}</p>}
