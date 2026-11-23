@@ -5,6 +5,7 @@ import { EstadoCarga } from '../componentes/EstadoCarga'
 import { GraficaIrms, colorSerie } from '../componentes/GraficaIrms'
 import { Tarjeta } from '../componentes/Tarjeta'
 import { Ayuda } from '../componentes/Ayuda'
+import { costo, formatoDinero, useTarifa } from '../utilidades/tarifa'
 import { aPuntos } from '../utilidades/series'
 import { duracionSesion, formatoCorriente, formatoDuracion, formatoEnergia, formatoPorcentaje } from '../utilidades/formato'
 
@@ -13,6 +14,7 @@ export function DetalleSesion() {
   const resumen = useQuery({ queryKey: ['sesion', id], queryFn: () => api.sesion(id), refetchInterval: (q) => (q.state.data?.activa ? 5000 : false) })
   const lecturas = useQuery({ queryKey: ['lecturas', id], queryFn: () => api.lecturas(id) })
   const s = resumen.data
+  const { tarifa } = useTarifa()
 
   return (
     <EstadoCarga cargando={resumen.isLoading || lecturas.isLoading} error={resumen.error ?? lecturas.error}>
@@ -32,7 +34,8 @@ export function DetalleSesion() {
           <div className="grid gap-4 sm:grid-cols-4">
             <Tarjeta tipo="medido" tono="corriente" ayuda="irms" titulo="Corriente promedio" valor={formatoCorriente(s.i_rms_promedio)} />
             <Tarjeta tipo="medido" tono="corriente" titulo="Corriente máxima" valor={formatoCorriente(s.i_rms_max)} />
-            <Tarjeta tipo="estimado" tono="energia" ayuda="energia" titulo="Energía" valor={formatoEnergia(s.energia_estimada_kwh)} />
+            <Tarjeta tipo="estimado" tono="energia" ayuda="energia" titulo="Energía" valor={formatoEnergia(s.energia_estimada_kwh)}
+              detalle={tarifa ? <>Costó unos <strong>{formatoDinero(costo(s.energia_estimada_kwh, tarifa), tarifa)}</strong> con tu tarifa.</> : <Link className="enlace" to="/cuenta">Pon tu tarifa para verlo en dinero</Link>} />
             <Tarjeta tipo="medido" ayuda="perdida" titulo="Pérdida de lecturas" valor={formatoPorcentaje(s.porcentaje_perdida)} detalle={`${s.n_lecturas} lecturas`} />
           </div>
           <section className="tarjeta">

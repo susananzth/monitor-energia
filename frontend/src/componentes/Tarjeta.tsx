@@ -3,7 +3,7 @@ import { SUPUESTO } from '../utilidades/formato'
 import type { Termino } from '../utilidades/glosario'
 import { Ayuda } from './Ayuda'
 
-export type Tono = 'corriente' | 'potencia' | 'energia' | 'tiempo' | 'neutro'
+export type Tono = 'corriente' | 'potencia' | 'energia' | 'tiempo' | 'dinero' | 'neutro'
 
 /** Color e ícono por tipo de dato, iguales en toda la plataforma. */
 export const TONOS: Record<Tono, { icono: string; burbuja: string }> = {
@@ -11,6 +11,7 @@ export const TONOS: Record<Tono, { icono: string; burbuja: string }> = {
   potencia: { icono: '⚡', burbuja: 'bg-amber-100 text-amber-700' },
   energia: { icono: '🔋', burbuja: 'bg-emerald-100 text-emerald-700' },
   tiempo: { icono: '⏱️', burbuja: 'bg-violet-100 text-violet-700' },
+  dinero: { icono: '💰', burbuja: 'bg-acento-50 text-acento-700' },
   neutro: { icono: '📊', burbuja: 'bg-slate-100 text-slate-600' },
 }
 

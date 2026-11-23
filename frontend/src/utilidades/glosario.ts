@@ -12,6 +12,14 @@ export const GLOSARIO = {
     termino: 'Energía',
     texto: 'Lo consumido en total durante la medición. Se mide en Wh o kWh, la misma unidad de tu recibo de luz.',
   },
+  tarifa: {
+    termino: 'Tarifa (precio del kWh)',
+    texto: 'Lo que cobra la empresa de luz por cada kWh. Sale en tu recibo como "precio unitario" o "cargo por energía". 1 kWh es usar 1000 W durante 1 hora.',
+  },
+  costo: {
+    termino: 'Costo',
+    texto: 'Energía consumida × precio del kWh de tu recibo. Es aproximado: no incluye cargos fijos y la energía también es estimada.',
+  },
   estimado: {
     termino: 'Estimado',
     texto: 'Se calcula a partir de la corriente suponiendo 220 V. Es una buena aproximación, no una medida exacta.',

@@ -17,6 +17,8 @@ import type { Lectura, Sesion } from '../api/tipos'
 import { EstadoCarga } from '../componentes/EstadoCarga'
 import { Ayuda, EncabezadoPagina, GuiaPagina } from '../componentes/Ayuda'
 import { TONOS, type Tono } from '../componentes/Tarjeta'
+import { ConfigTarifa } from '../componentes/ConfigTarifa'
+import { costo, costoMensual, DIAS_MES, formatoDinero, useTarifa } from '../utilidades/tarifa'
 import type { Termino } from '../utilidades/glosario'
 import {
   duracionSesion,
@@ -133,6 +135,7 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
   const sinDatos = segundosSinDatos(ultima?.timestamp, ahora)
   const conectado = sinDatos !== null && sinDatos <= 15
   const serie = puntos.map((l) => ({ t: new Date(l.timestamp).getTime(), w: l.p_est, i: l.i_rms }))
+  const { tarifa } = useTarifa()
 
   return (
     <div className="space-y-4">
@@ -179,7 +182,7 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Dato
           titulo="Corriente medida"
           tono="corriente"
@@ -194,6 +197,18 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
           valor={ultima ? formatoEnergia(ultima.energia_acumulada_kwh) : '—'}
           explicacion="Lo consumido desde que empezó la sesión."
           estimado
+        />
+        <Dato
+          titulo="Costo de esta sesión"
+          tono="dinero"
+          ayuda="costo"
+          valor={tarifa && ultima ? formatoDinero(costo(ultima.energia_acumulada_kwh, tarifa), tarifa) : '—'}
+          explicacion={
+            tarifa
+              ? `Con tu tarifa de ${formatoDinero(tarifa.precioKwh, tarifa)} por kWh.`
+              : 'Pon el precio del kWh de tu recibo en «¿Cuánto me cuesta?», más abajo.'
+          }
+          estimado={!!tarifa}
         />
         <Dato
           titulo="Tiempo midiendo"
@@ -253,6 +268,8 @@ function Ahora({ activa, ahora }: { activa: Sesion; ahora: number }) {
 
 function Historico({ sesiones, ahora }: { sesiones: Sesion[]; ahora: number }) {
   const r = resumenHistorico(sesiones, ahora)
+  const { tarifa } = useTarifa()
+  const enDinero = (kwh: number) => (tarifa ? ` · ${formatoDinero(costo(kwh, tarifa), tarifa)}` : '')
   const recientes = [...sesiones].sort((a, b) => b.inicio.localeCompare(a.inicio))
   const grafica = recientes
     .slice(0, SESIONES_GRAFICA)
@@ -271,7 +288,7 @@ function Historico({ sesiones, ahora }: { sesiones: Sesion[]; ahora: number }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Dato titulo="Mediciones realizadas" tono="neutro" ayuda="sesion" valor={String(r.sesiones)} explicacion={`${r.lecturas} lecturas en total.`} />
         <Dato titulo="Tiempo total medido" tono="tiempo" valor={formatoDuracion(r.segundosMedidos)} explicacion="Suma de todas las sesiones." />
-        <Dato titulo="Energía total" tono="energia" ayuda="energia" valor={formatoEnergia(r.energiaKwh)} explicacion="Todo lo consumido en las mediciones." estimado />
+        <Dato titulo="Energía total" tono="energia" ayuda="energia" valor={formatoEnergia(r.energiaKwh)} explicacion={tarifa ? `Te costó unos ${formatoDinero(costo(r.energiaKwh, tarifa), tarifa)}.` : 'Todo lo consumido en las mediciones.'} estimado />
         <Dato titulo="Corriente más alta" tono="corriente" ayuda="irms" valor={formatoCorriente(r.iMax)} explicacion="El pico registrado por el sensor." />
       </div>
 
@@ -299,7 +316,7 @@ function Historico({ sesiones, ahora }: { sesiones: Sesion[]; ahora: number }) {
                 formatter={(_v, _n, item) => {
                   const s = (item.payload as { s: Sesion }).s
                   return [
-                    `${formatoEnergia(s.energia_estimada_kwh)} en ${formatoDuracion(tiempoMedido(s, ahora))}`,
+                    `${formatoEnergia(s.energia_estimada_kwh)} en ${formatoDuracion(tiempoMedido(s, ahora))}${enDinero(s.energia_estimada_kwh)}`,
                     'Energía (estimada)',
                   ]
                 }}
@@ -328,6 +345,7 @@ function Historico({ sesiones, ahora }: { sesiones: Sesion[]; ahora: number }) {
                     <p className="text-sm text-slate-500">
                       {formatoFecha(s.inicio)} · {formatoDuracion(tiempoMedido(s, ahora))} · promedio{' '}
                       {formatoPotencia(w)} · {formatoEnergia(s.energia_estimada_kwh)}
+                      {enDinero(s.energia_estimada_kwh)}
                     </p>
                   </div>
                   <Semaforo w={w} />
@@ -338,6 +356,129 @@ function Historico({ sesiones, ahora }: { sesiones: Sesion[]; ahora: number }) {
         </ul>
       </Caja>
     </div>
+  )
+}
+
+const HORAS_RAPIDAS = [0.25, 1, 4, 8, 24]
+
+function textoHoras(h: number): string {
+  if (h < 1) return `${Math.round(h * 60)} min`
+  return `${Number(h.toFixed(2))} h`
+}
+
+function CuantoCuesta({ sesiones, activa }: { sesiones: Sesion[]; activa?: Sesion }) {
+  const { tarifa } = useTarifa()
+  const [cambiando, setCambiando] = useState(false)
+  const opciones = [...sesiones].filter((s) => s.n_lecturas > 0).sort((a, b) => b.inicio.localeCompare(a.inicio))
+  const [elegidaId, setElegidaId] = useState<number | null>(null)
+  const [horas, setHoras] = useState(1)
+  const elegida = opciones.find((s) => s.id === elegidaId) ?? (activa && activa.n_lecturas > 0 ? activa : opciones[0])
+
+  if (!tarifa || cambiando)
+    return (
+      <Caja
+        titulo={tarifa ? 'Cambiar tu tarifa' : '¿Cuánto me cuesta en dinero?'}
+        ayuda="Escribe cuánto te cobra tu empresa de luz por cada kWh. Así verás en soles (o tu moneda) lo que gasta cada aparato que midas."
+      >
+        <ConfigTarifa alGuardar={() => setCambiando(false)} />
+        {tarifa && (
+          <button type="button" onClick={() => setCambiando(false)} className="mt-2 text-sm text-slate-500 hover:underline">
+            Cancelar
+          </button>
+        )}
+      </Caja>
+    )
+
+  const w = elegida ? potenciaPromedio(elegida) : 0
+  const porHora = costoMensual(w, 1, tarifa) / DIAS_MES
+  const porDia = porHora * horas
+  const alMes = costoMensual(w, horas, tarifa)
+
+  return (
+    <section className="tarjeta border-acento-100 bg-gradient-to-br from-acento-50 via-white to-white">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="font-semibold text-slate-800">
+            ¿Cuánto me cuesta?
+            <Ayuda termino="costo" />
+          </h3>
+          <p className="text-sm text-slate-500">
+            Tu tarifa: <strong>{formatoDinero(tarifa.precioKwh, tarifa)}</strong> por kWh.{' '}
+            <button type="button" onClick={() => setCambiando(true)} className="font-medium text-marca-700 hover:underline">
+              Cambiar
+            </button>
+          </p>
+        </div>
+        <span title={SUPUESTO} className="cursor-help rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+          estimado
+        </span>
+      </div>
+
+      {!elegida ? (
+        <p className="py-6 text-center text-slate-500">Mide un aparato y aquí verás cuánto te costaría usarlo cada mes.</p>
+      ) : (
+        <div className="mt-4 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="etiqueta block">
+              Aparato medido
+              <select className="campo" value={elegida.id} onChange={(e) => setElegidaId(Number(e.target.value))}>
+                {opciones.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    #{s.id} {s.carga_declarada} · {formatoPotencia(potenciaPromedio(s))}
+                    {s.activa ? ' (en curso)' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div>
+              <label className="etiqueta block">
+                ¿Cuánto lo usas al día? <strong className="text-slate-900">{textoHoras(horas)}</strong>
+                <input
+                  type="range"
+                  min={0.25}
+                  max={24}
+                  step={0.25}
+                  value={horas}
+                  onChange={(e) => setHoras(Number(e.target.value))}
+                  className="mt-2 w-full accent-acento-600"
+                />
+              </label>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {HORAS_RAPIDAS.map((h) => (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => setHoras(h)}
+                    className={`rounded-full px-2 py-0.5 text-xs ${h === horas ? 'bg-acento-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    {textoHoras(h)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
+              <p className="text-xs text-slate-500">Por cada hora de uso</p>
+              <p className="text-xl font-bold text-slate-900">{formatoDinero(porHora, tarifa)}</p>
+            </div>
+            <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
+              <p className="text-xs text-slate-500">Al día ({textoHoras(horas)})</p>
+              <p className="text-xl font-bold text-slate-900">{formatoDinero(porDia, tarifa)}</p>
+            </div>
+            <div className="rounded-xl bg-acento-600 p-3 text-white">
+              <p className="text-xs text-acento-50">Al mes ({DIAS_MES} días)</p>
+              <p className="text-2xl font-bold">{formatoDinero(alMes, tarifa)}</p>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500">
+            Usa el consumo promedio de la medición ({formatoPotencia(w)}). La medición en sí costó{' '}
+            {formatoDinero(costo(elegida.energia_estimada_kwh, tarifa), tarifa)} ({formatoEnergia(elegida.energia_estimada_kwh)}).
+          </p>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -384,6 +525,8 @@ export function Panel() {
           )}
         </div>
 
+        <CuantoCuesta sesiones={lista} activa={activa} />
+
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-900">Histórico</h2>
           <Historico sesiones={lista} ahora={ahora} />
@@ -397,6 +540,9 @@ export function Panel() {
             </li>
             <li>
               <strong>Potencia (W) y energía (Wh/kWh):</strong> se calculan a partir de la corriente. {SUPUESTO}
+            </li>
+            <li>
+              <strong>Costo:</strong> energía × el precio del kWh que pusiste. No incluye cargos fijos del recibo.
             </li>
             <li>
               <strong>Colores:</strong> verde = consumo bajo (menos de 300 W), ámbar = medio (hasta 1,5 kW), rojo = alto.
