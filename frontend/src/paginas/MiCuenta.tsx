@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { api } from '../api/cliente'
 import { useAuth } from '../auth/Auth'
+import { ConfigTarifa } from '../componentes/ConfigTarifa'
 
 export function MiCuenta() {
   const { usuario } = useAuth()
@@ -27,7 +28,7 @@ export function MiCuenta() {
     cambiar.mutate()
   }
   return (
-    <div className="max-w-md space-y-4">
+    <div className="max-w-xl space-y-4">
       <h2 className="text-2xl font-bold tracking-tight">Mi cuenta</h2>
       <div className="tarjeta">
         <p className="font-medium">{usuario?.nombre}</p>
@@ -35,6 +36,11 @@ export function MiCuenta() {
           @{usuario?.usuario} · {usuario?.rol === 'ADMIN' ? 'Administrador' : 'Miembro'}
         </p>
       </div>
+      <section className="tarjeta space-y-2">
+        <h3 className="font-semibold">💰 Tarifa de luz</h3>
+        <p className="text-sm text-slate-500">El precio del kWh de tu recibo. Con él, el panel muestra cuánto cuesta cada medición.</p>
+        <ConfigTarifa />
+      </section>
       <form onSubmit={enviar} className="space-y-3 tarjeta">
         <h3 className="font-semibold">Cambiar contraseña</h3>
         <label className="etiqueta block">

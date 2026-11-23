@@ -66,6 +66,15 @@ export function PaginaAyuda() {
           </p>
         </div>
         <div className="tarjeta">
+          <h3 className="font-semibold">Cómo se calcula el costo en dinero</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            El recibo de luz cobra por <strong>kWh</strong> (kilovatio-hora): 1 kWh es usar un aparato de 1000 W durante 1 hora. Pon el precio
+            del kWh de tu recibo en <strong>Mi cuenta</strong> o en el Panel. Cada persona tiene su propia tarifa, porque depende de dónde vive.
+            El costo es <strong>energía × precio del kWh</strong>. Para saber cuánto pagarías al mes, el Panel multiplica el consumo promedio del
+            aparato por las horas que lo usas al día y por 30 días. No incluye cargos fijos del recibo.
+          </p>
+        </div>
+        <div className="tarjeta">
           <h3 className="font-semibold">Cómo funciona por dentro</h3>
           <p className="mt-2 text-sm text-slate-600">
             El sensor (SCT-013-000) detecta el campo magnético que crea la corriente en el cable, sin cortarlo. Un ESP32 convierte esa señal en
